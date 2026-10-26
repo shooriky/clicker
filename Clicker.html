@@ -522,6 +522,7 @@
       playUpgradeSound();
       updateStats();
       renderUpgrades();
+      saveGame();
     }
 
     // --- Stats update ---
@@ -556,6 +557,7 @@
 
       updateStats();
       renderUpgrades();
+      saveGame();
     });
 
     // --- Passive income loop ---
@@ -564,8 +566,49 @@
         coins += perSecond / 10; // 10 ticks per second
         updateStats();
         renderUpgrades();
+        saveGame();
       }
     }, 100);
+
+    // --- Save / load progress ---
+    function saveGame() {
+      try {
+        const state = {
+          coins,
+          perClick,
+          perSecond,
+          totalClicks,
+          upgrades: upgrades.map(u => ({ id: u.id, level: u.level }))
+        };
+        localStorage.setItem("superClickerSave", JSON.stringify(state));
+      } catch (e) {
+        console.warn("Failed to save game", e);
+      }
+    }
+
+    function loadGame() {
+      try {
+        const raw = localStorage.getItem("superClickerSave");
+        if (!raw) return;
+        const state = JSON.parse(raw);
+        if (typeof state.coins === "number" && isFinite(state.coins)) coins = state.coins;
+        if (typeof state.perClick === "number" && isFinite(state.perClick)) perClick = state.perClick;
+        if (typeof state.perSecond === "number" && isFinite(state.perSecond)) perSecond = state.perSecond;
+        if (typeof state.totalClicks === "number" && isFinite(state.totalClicks)) totalClicks = state.totalClicks;
+        if (Array.isArray(state.upgrades)) {
+          state.upgrades.forEach(saved => {
+            const upg = upgrades.find(u => u.id === saved.id);
+            if (upg && typeof saved.level === "number" && isFinite(saved.level)) {
+              upg.level = Math.max(0, Math.floor(saved.level));
+            }
+          });
+        }
+      } catch (e) {
+        console.warn("Failed to load game", e);
+      }
+    }
+
+    loadGame();
 
     // --- Initial render ---
     updateStats();
