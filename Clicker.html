@@ -348,18 +348,16 @@
 
     // --- Floating text on click ---
     function spawnFloatingText(text, x, y) {
-      const rect = clickButton.getBoundingClientRect();
       const span = document.createElement("span");
       span.className = "floating-text";
       span.textContent = text;
 
-      const offsetX = x - rect.left;
-      const offsetY = y - rect.top;
+      span.style.left = x + "px";
+      span.style.top = y + "px";
+      span.style.position = "fixed";
+      span.style.zIndex = "1000";
 
-      span.style.left = offsetX + "px";
-      span.style.top = offsetY + "px";
-
-      clickButton.appendChild(span);
+      document.body.appendChild(span);
       setTimeout(() => span.remove(), 700);
     }
 
